@@ -1,0 +1,66 @@
+{% extends 'layout/site.twig' %}
+{% import "_includes/forms.twig" as forms %}
+
+
+{% set fullPageForm = true %}
+{% set title = "Sections" %}
+{% block headerButton %}
+    <a href="{{ ('admin/sections/'~ section.id ~'/entrytypes/new')|url }}" class="btn  red lighten-2">{{ "New EntryType"|t }}</a>
+{% endblock %}
+
+
+{% block pageContent %}
+    <div class="card">
+        <div class="header">
+            <h2>
+                {{ "All Entry Types"|t }}
+            </h2>
+            <ul class="header-dropdown m-r--5">
+                <li class="dropdown">
+                    <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="material-icons">more_vert</i>
+                    </a>
+                    <ul class="dropdown-menu pull-right">
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Action</a></li>
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Another action</a></li>
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Something else here</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="body table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Handle</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for entryType in entryTypes %}
+                    <tr>
+                        <th scope="row">
+                            <a href="{{ ('admin/sections/'~ section.id ~'/entrytypes/'~entryType.id)|url }}">
+                                {{ entryType.id }}
+                            </a>
+                        </th>
+                        <td>{{ entryType.name }}</td>
+                        <td>{{ entryType.handle }}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {#{{ forms.textField({
+        id: "loginName",
+        name: "username",
+        placeholder: "test",
+        value: "test"
+    }) }}#}
+
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'layout/layout.twig' %}
+
+{% block content %}
+
+    {% if fullPageForm is defined and fullPageForm == true %}
+        <form id="main-form" method="post" accept-charset="UTF-8" data-confirm-unload>
+    {% endif %}
+
+    <section class="content" {% if controller is defined and controller != null %}ng-controller="{{ controller }}"{% endif %}>
+        <div class="container-fluid">
+
+            {% block header %}
+                <div style="float: left">
+
+                    <h4>{{ title }}</h4>
+                </div>
+
+                <div class="secondary-buttons">
+                    {% block headerButton %}
+
+
+                    {% endblock %}
+                </div>
+            {% endblock %}
+        </div>
+
+
+        <div class="row">
+        {% block main %}
+
+            {% set sideNav = block('sideNav') %}
+            {% set pageContent = block('pageContent') %}
+            {% if sideNav is not empty %}
+                <div class="col-lg-3 entry-type-container">
+                    {{ sideNav|raw }}
+                </div>
+                <div class="col-lg-9" style="">
+                    <div class="pane">{{ pageContent|raw }}</div>
+                </div>
+            {% else %}
+                <div class="col-lg-12" style="">
+                    <div class="pane">{{ pageContent|raw }}</div>
+                </div>
+                {% block sideNav %}{% endblock %}
+            {% endif %}
+
+        {% endblock %}
+        </div>
+    </section>
+
+    {% if fullPageForm is defined and fullPageForm == true %}
+        </form>
+    {% endif %}
+{% endblock %}

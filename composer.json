@@ -1,0 +1,24 @@
+{
+  "name": "framework",
+  "description": "PHP Framework",
+  "type": "framework",
+  "license": "MIT",
+  "homepage": "http://www.secondred.de/",
+  "keywords": [
+  ],
+  "authors": [
+    {
+      "name": "Robin Schambach",
+      "email": "Schambach@secondred.de",
+      "homepage": "http://www.secondred.de/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "twig/twig": "~2.0",
+    "filp/whoops": "^2.1",
+    "usmanhalalit/pixie": "2.*@dev",
+    "bramus/router": "~1.3",
+    "ezyang/htmlpurifier": "^4.9"
+  }
+}

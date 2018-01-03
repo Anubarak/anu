@@ -1,0 +1,24 @@
+{% for item in items %}
+    <li>
+        {% if item.sub is defined and item.sub|length %}
+            <a href="javascript:void(0);" class="menu-toggle waves-effect waves-light">
+                <i class="material-icons">assignment</i>
+                <span>{{ item.label }}</span>
+            </a>
+
+
+            <ul class="ml-menu">
+                {% for sub in item.sub %}
+                    <li>
+                        <a class="waves-effect waves-light" href="{{ sub.url }}">{{ sub.label }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <a href="{{ item.url }}" class="waves-effect waves-light">
+                <i class="material-icons">assignment</i>
+                <span>{{ item.label }}</span>
+            </a>
+        {% endif %}
+    </li>
+{% endfor %}

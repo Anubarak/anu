@@ -1,0 +1,36 @@
+{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
+{%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
+{%- set label = (label is defined and label != '__blank__' ? label : null) %}
+{%- set instructions = (instructions is defined ? instructions : null) %}
+{%- set warning = (warning is defined ? warning : null) %}
+{%- set errors = (errors is defined ? errors : null) -%}
+{%- set fieldClass = [
+    'field',
+    (first is defined and first ? 'first' : null),
+    (errors ? 'has-errors' : null),
+    (fieldClass is defined and fieldClass ? fieldClass : null)
+]|filter|join(' ') %}
+
+<div class="{{ fieldClass }}"
+        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+    {% if instructions %}
+        <div class="heading">
+            {% if instructions %}
+                <div class="instructions">{{ instructions|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <div class="input-field{% if errors %} errors{% endif %}">
+        {{ input|raw }}
+        {% if label %}
+            <label for="{{ id }}" class="{% if required %}required{% endif %}">{{ label }}</label>
+        {% endif %}
+
+    </div>
+
+    {% if warning %}
+        <p class="warning">{{ warning|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+    {% endif %}
+    {% include "_includes/forms/errorList.twig" with { errors: errors } %}
+</div>

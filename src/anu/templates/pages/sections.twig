@@ -1,0 +1,72 @@
+{% extends 'layout/site.twig' %}
+{% import "_includes/forms.twig" as forms %}
+
+
+{% set fullPageForm = true %}
+{% set controller = 'sectionController' %}
+{% set title = "Sections" %}
+{% block headerButton %}
+    <a href="{{ 'admin/sections/new'|url }}" class="btn  red lighten-2">{{ "New Section"|t }}</a>
+{% endblock %}
+
+
+{% block pageContent %}
+    <div class="card">
+        <div class="header">
+            <h2>
+                All Sections
+            </h2>
+            <ul class="header-dropdown m-r--5">
+                <li class="dropdown">
+                    <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="material-icons">more_vert</i>
+                    </a>
+                    <ul class="dropdown-menu pull-right">
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Action</a></li>
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Another action</a></li>
+                        <li><a href="javascript:void(0);" class=" waves-effect waves-block">Something else here</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="body table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Handle</th>
+                    <th>Type</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="section in sections">
+                    <th scope="row">
+                        <a href="{{ 'admin/sections/'|url }}{[{section.id}]}">
+                            {[{ section.id }]}
+                        </a>
+                    </th>
+                    <td>{[{ section.name }]}</td>
+                    <td>{[{ section.handle }]}</td>
+                    <td>{[{ section.type }]}</td>
+                    <td>
+                        <a href="{{ 'admin/sections/'|url }}{[{section.id}]}/entrytypes">
+                            {{ "Edit Entrytypes"|t }}
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {#{{ forms.textField({
+        id: "loginName",
+        name: "username",
+        placeholder: "test",
+        value: "test"
+    }) }}#}
+
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'layout/site.twig' %}
+{% import "_includes/forms.twig" as forms %}
+
+
+{% set fullPageForm = true %}
+{% set title = "Section" %}
+{% block headerButton %}
+    <input type="hidden" name="action" value="sections/save-section">
+    <input type="hidden" name="redirect" value="{{ "admin/sections"|url }}">
+    <input type="hidden" name="id" value="{{ section.id }}">
+    <a href="" id="save" class="waves-effect waves-light btn red lighten-2">{{ "Save Section"|t }}</a>
+{% endblock %}
+
+{% block pageContent %}
+    <div class="card">
+
+
+        <div class="body">
+            <h2 class="card-inside-title">
+                {% if section.id == 'new' %}
+                    {{ "New Section"|t }}
+                {% else %}
+                    {{ "Edit Section"|t }}
+                {% endif %}
+            </h2>
+
+            <div class="row clearfix">
+                <div class="col-sm-12">
+                    {{ forms.textField({
+                        id: "name",
+                        name: "name",
+                        required: true,
+                        value: section.name,
+                        label: 'Name'|t,
+                    }) }}
+
+                    {{ forms.textField({
+                        id: "handle",
+                        name: "handle",
+                        required: true,
+                        value: section.handle,
+                        label: 'Handle'|t,
+                    }) }}
+
+                    {{ forms.select({
+                        id: "type",
+                        name: "type",
+                        required: true,
+                        value: section.handle,
+                        label: 'Typ'|t,
+                        options: [
+                            {label: "Structure", value:"structure"},
+                            {label: "Single", value:"single"},
+                            {label: "Channel", value:"channel"}
+                        ]
+                    }) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

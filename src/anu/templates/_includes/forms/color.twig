@@ -1,0 +1,25 @@
+{% import "_includes/forms" as forms %}
+
+{% set id = id ?? 'color'~random() %}
+
+<div class="flex"
+        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+    <div class="color static">
+        <div class="colorpreview"
+            {%- if value %} style="background-color: {{ value }};"{% endif -%}
+        ></div>
+    </div>
+    {{ forms.text({
+        id: id,
+        name: name ?? null,
+        value: value ?? null,
+        size: 10,
+        class: 'code',
+        autofocus: autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true),
+        disabled: disabled ?? false
+    }) }}
+</div>
+
+{%- js %}
+    new Craft.ColorInput('{{ id|namespaceInputId }}');
+{% endjs %}
