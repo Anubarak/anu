@@ -10,13 +10,13 @@ namespace anu\controller;
 use Anu;
 use anu\base\Controller;
 use anu\db\Query;
+use anu\di\InvalidConfigException;
+use anu\di\NotInstantiableException;
 use anu\models\Field;
 use anu\records\FieldGroupRecord;
 use anu\records\FieldRecord;
 
 class Fields extends Controller{
-
-
     /**
      * @return string
      * @throws \Twig_Error_Loader
@@ -24,6 +24,8 @@ class Fields extends Controller{
      * @throws \Twig_Error_Syntax
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
+     * @throws \anu\di\InvalidConfigException
+     * @throws \anu\di\NotInstantiableException
      */
     public function actionRender(){
         $this->redirectToLogin();
@@ -69,7 +71,10 @@ class Fields extends Controller{
      * @return string
      * @throws \Throwable
      * @throws \anu\base\InvalidConfigException
+     * @throws \anu\base\InvalidRouteException
      * @throws \anu\db\Exception
+     * @throws \anu\di\InvalidConfigException
+     * @throws \anu\di\NotInstantiableException
      */
     public function actionSaveField(){
         //$this->redirectToLogin();
@@ -98,6 +103,8 @@ class Fields extends Controller{
     /**
      * @return Field
      * @throws \anu\base\InvalidConfigException
+     * @throws \anu\di\InvalidConfigException
+     * @throws \anu\di\NotInstantiableException
      */
     public function _getField(){
         $request = Anu::$app->getRequest();

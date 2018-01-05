@@ -1,0 +1,10 @@
+{% extends 'layout/site.twig' %}
+{% import "_includes/forms.twig" as forms %}
+
+
+{% set fullPageForm = true %}
+{% set controller = 'formController' %}
+{% set title = "Entries"|t %}
+{% block headerButton %}
+    <a class="btn waves-effect waves-light red lighten-2">{{ "Save Entry"|t }}</a>
+{% endblock %}

@@ -115,6 +115,25 @@ class Request extends Component{
             'blub'  => 'foo'
         ));
 
+        // entry forms
+        //=======================================================================
+        $router->get(
+            '/admin/entries/(\w+)',
+            '\anu\controller\Entry@render-list',
+            [
+                'section' => ''
+            ]
+        );
+
+        $router->get(
+            '/admin/entries/(\w+)/(\w+)',
+            '\anu\controller\Entry@render-form',
+            [
+                'section' => '',
+                'id'      => 'new'
+            ]
+        );
+
         $router->get('', 'anu\controller\home@index');
 
         $resonses = $router->run();

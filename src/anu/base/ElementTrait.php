@@ -91,4 +91,8 @@ trait ElementTrait
      * @var int|null The element’s level within its structure
      */
     public $level;
+    /**
+     * @var mixed The Type/Class of the element
+     */
+    public $type;
 }

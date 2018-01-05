@@ -73,21 +73,20 @@ class ActiveRecord extends BaseActiveRecord
     /**
      * The insert operation. This is mainly used when overriding [[transactions()]] to specify which operations are transactional.
      */
-    const OP_INSERT = 0x01;
+    public const OP_INSERT = 0x01;
     /**
      * The update operation. This is mainly used when overriding [[transactions()]] to specify which operations are transactional.
      */
-    const OP_UPDATE = 0x02;
+    public const OP_UPDATE = 0x02;
     /**
      * The delete operation. This is mainly used when overriding [[transactions()]] to specify which operations are transactional.
      */
-    const OP_DELETE = 0x04;
+    public const OP_DELETE = 0x04;
     /**
      * All three operations: insert, update, delete.
      * This is a shortcut of the expression: OP_INSERT | OP_UPDATE | OP_DELETE.
      */
-    const OP_ALL = 0x07;
-
+    public const OP_ALL = 0x07;
 
     /**
      * Loads default values from database table schema.
@@ -101,9 +100,11 @@ class ActiveRecord extends BaseActiveRecord
      * ```
      *
      * @param bool $skipIfSet whether existing value should be preserved.
-     * This will only set defaults for attributes that are `null`.
+     *                        This will only set defaults for attributes that are `null`.
+     *
      * @return $this the model instance itself.
      * @throws InvalidConfigException
+     * @throws \anu\base\NotSupportedException
      */
     public function loadDefaultValues($skipIfSet = true)
     {
@@ -121,6 +122,7 @@ class ActiveRecord extends BaseActiveRecord
      * By default, the "db" application component is used as the database connection.
      * You may override this method if you want to use a different database connection.
      * @return Connection the database connection used by this AR class.
+     * @throws \anu\base\InvalidConfigException
      */
     public static function getDb()
     {
@@ -156,10 +158,13 @@ class ActiveRecord extends BaseActiveRecord
     /**
      * Finds ActiveRecord instance(s) by the given condition.
      * This method is internally called by [[findOne()]] and [[findAll()]].
+     *
      * @param mixed $condition please refer to [[findOne()]] for the explanation of this parameter
+     *
      * @return ActiveQueryInterface the newly created [[ActiveQueryInterface|ActiveQuery]] instance.
      * @throws InvalidConfigException if there is no primary key defined
      * @internal
+     * @throws \anu\base\NotSupportedException
      */
     protected static function findByCondition($condition)
     {
@@ -362,6 +367,7 @@ class ActiveRecord extends BaseActiveRecord
      *
      * @return string[] the primary keys of the associated database table.
      * @throws InvalidConfigException
+     * @throws \anu\base\NotSupportedException
      */
     public static function primaryKey()
     {
@@ -373,6 +379,7 @@ class ActiveRecord extends BaseActiveRecord
      * The default implementation will return all column names of the table associated with this AR class.
      * @return array list of attribute names.
      * @throws InvalidConfigException
+     * @throws \anu\base\NotSupportedException
      */
     public function attributes()
     {
@@ -655,6 +662,7 @@ class ActiveRecord extends BaseActiveRecord
      * Note that it is possible the number of rows deleted is 0, even though the deletion execution is successful.
      * @throws StaleObjectException
      * @throws Exception
+     * @throws \anu\base\Exception
      */
     protected function deleteInternal()
     {

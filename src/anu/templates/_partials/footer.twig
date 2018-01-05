@@ -1,1 +1,4 @@
 {{ jsCode|raw }}
+{% for file in jsFiles %}
+    <script src="{{ file }}"></script>
+{% endfor %}

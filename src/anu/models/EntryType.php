@@ -12,6 +12,8 @@ namespace anu\models;
 
 use Anu;
 use anu\base\SavableComponent;
+use anu\behaviors\FieldLayoutBehavior;
+use anu\elements\Entry;
 use anu\helper\Url;
 use anu\records\EntryTypeRecord;
 use anu\validators\UniqueValidator;
@@ -19,6 +21,7 @@ use anu\validators\UniqueValidator;
 /**
  * EntryType model class.
  *
+ * @mixin FieldLayoutBehavior
  *
  * @author Robin Schambach
  */
@@ -141,6 +144,7 @@ class EntryType extends SavableComponent
      * Returns the entry type’s section.
      *
      * @return Section|null
+     * @throws \anu\base\InvalidConfigException
      */
     public function getSection()
     {
@@ -149,5 +153,18 @@ class EntryType extends SavableComponent
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return [
+            'fieldLayout' => [
+                'class'       => FieldLayoutBehavior::class,
+                'elementType' => Entry::class
+            ],
+        ];
     }
 }

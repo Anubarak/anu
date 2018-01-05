@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 03. Jan 2018 um 06:32
+-- Erstellungszeit: 05. Jan 2018 um 17:30
 -- Server-Version: 10.1.28-MariaDB
 -- PHP-Version: 7.1.11
 
@@ -157,7 +157,7 @@ CREATE TABLE `entrytypes` (
 --
 
 INSERT INTO `entrytypes` (`id`, `sectionId`, `fieldLayoutId`, `name`, `handle`, `hasTitleField`, `titleLabel`, `titleFormat`, `sortOrder`, `dateCreated`, `dateUpdated`, `uid`) VALUES
-(1, 2, 0, 'Seiten', 'pages', 1, 'Title', NULL, 1, '2017-12-31 18:33:50', '2017-12-31 18:33:50', '1a52c6fd-121c-42d6-a6c0-4ff447ea23fe');
+(1, 2, 1, 'Seiten', 'pages', 1, 'Title', NULL, 1, '2017-12-31 18:33:50', '2018-01-04 14:28:28', '1a52c6fd-121c-42d6-a6c0-4ff447ea23fe');
 
 -- --------------------------------------------------------
 
@@ -199,6 +199,14 @@ CREATE TABLE `fieldlayoutfields` (
   `uid` char(36) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Daten für Tabelle `fieldlayoutfields`
+--
+
+INSERT INTO `fieldlayoutfields` (`id`, `layoutId`, `tabId`, `fieldId`, `required`, `sortOrder`, `dateCreated`, `dateUpdated`, `uid`) VALUES
+(8, 1, 7, 2, 0, 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', '7b497363-aeeb-466b-b830-85a5e5755838'),
+(9, 1, 8, 1, 0, 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', 'a8433c6b-c024-489f-b31a-dc4290871007');
+
 -- --------------------------------------------------------
 
 --
@@ -212,6 +220,13 @@ CREATE TABLE `fieldlayouts` (
   `dateUpdated` datetime NOT NULL,
   `uid` char(36) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `fieldlayouts`
+--
+
+INSERT INTO `fieldlayouts` (`id`, `type`, `dateCreated`, `dateUpdated`, `uid`) VALUES
+(1, 'anu\\elements\\Entry', '2018-01-04 13:37:08', '2018-01-04 14:28:28', '18ff10b2-b5c7-4b2d-8d51-0656af1655dc');
 
 -- --------------------------------------------------------
 
@@ -228,6 +243,14 @@ CREATE TABLE `fieldlayouttabs` (
   `dateUpdated` datetime NOT NULL,
   `uid` char(36) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `fieldlayouttabs`
+--
+
+INSERT INTO `fieldlayouttabs` (`id`, `layoutId`, `name`, `sortOrder`, `dateCreated`, `dateUpdated`, `uid`) VALUES
+(7, 1, 'Neue Gruppe', 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', '4ab86cb8-a8dd-4699-8fff-d8969e755753'),
+(8, 1, 'Foo', 2, '2018-01-04 14:28:28', '2018-01-04 14:28:28', '3a755c25-c5ab-41b6-af5f-007aa4c49b74');
 
 -- --------------------------------------------------------
 
@@ -254,7 +277,7 @@ CREATE TABLE `fields` (
 
 INSERT INTO `fields` (`id`, `groupId`, `name`, `handle`, `instructions`, `type`, `settings`, `dateCreated`, `dateUpdated`, `uid`) VALUES
 (1, 1, 'Text Field', 'text', 'ededede', 'anu\\fields\\TextField', '[]', '2017-12-30 21:18:49', '2017-12-31 15:43:57', '3590f541-cd96-419d-9e26-9f4711ca85c4'),
-(2, 1, 'text', 'number', NULL, 'anu\\models\\Field', '[]', '2017-12-30 21:26:48', '2017-12-30 21:26:48', '07fec350-dc27-4fa0-929e-85148a95ce2e'),
+(2, 1, 'text', 'number', '', 'anu\\fields\\NumberField', '[]', '2017-12-30 21:26:48', '2018-01-04 13:08:30', '07fec350-dc27-4fa0-929e-85148a95ce2e'),
 (3, 2, 'Field for Contact', 'handle', 'Please fill out something ^.^', 'anu\\models\\Field', '[]', '2017-12-31 16:20:18', '2017-12-31 16:20:18', 'ad1adbc0-756e-402e-864d-f8cff92c4382');
 
 -- --------------------------------------------------------
@@ -512,19 +535,19 @@ ALTER TABLE `fieldgroups`
 -- AUTO_INCREMENT für Tabelle `fieldlayoutfields`
 --
 ALTER TABLE `fieldlayoutfields`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT für Tabelle `fieldlayouts`
 --
 ALTER TABLE `fieldlayouts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT für Tabelle `fieldlayouttabs`
 --
 ALTER TABLE `fieldlayouttabs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT für Tabelle `fields`
@@ -558,8 +581,8 @@ ALTER TABLE `userpermissions`
 -- Constraints der Tabelle `categories`
 --
 ALTER TABLE `categories`
-  ADD CONSTRAINT FOREIGN KEY (`groupId`) REFERENCES `categorygroups` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `categories_groupId_fk` FOREIGN KEY (`groupId`) REFERENCES `categorygroups` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`groupId`) REFERENCES `categorygroups` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `categories_id_fk` FOREIGN KEY (`id`) REFERENCES `elements` (`id`) ON DELETE CASCADE;
 
 --

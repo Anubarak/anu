@@ -25,9 +25,9 @@ class Section extends SavableComponent{
     // Constants
     // =========================================================================
 
-    const TYPE_SINGLE = 'single';
-    const TYPE_CHANNEL = 'channel';
-    const TYPE_STRUCTURE = 'structure';
+    public const TYPE_SINGLE = 'single';
+    public const TYPE_CHANNEL = 'channel';
+    public const TYPE_STRUCTURE = 'structure';
 
 
     // Properties
@@ -50,6 +50,10 @@ class Section extends SavableComponent{
      * @var string $type class of the field
      */
     public $type;
+    // private properties
+    // ===========================================================================
+
+    private $_entryTypes;
 
 
     public function rules(){
@@ -61,9 +65,23 @@ class Section extends SavableComponent{
     }
 
     /**
-     * @return \anu\db\ActiveRecord[]|array
+     * Returns the section's entry types.
+     *
+     * @return EntryType[]
+     * @throws \anu\base\InvalidConfigException
      */
-    public function getEntryTypes(){
-        return EntryTypeRecord::find()->where(['sectionId' => $this->id])->all();
+    public function getEntryTypes(): array
+    {
+        if ($this->_entryTypes !== null) {
+            return $this->_entryTypes;
+        }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        $this->_entryTypes = \Anu::$app->getSections()->getEntryTypesBySectionId($this->id);
+
+        return $this->_entryTypes;
     }
 }

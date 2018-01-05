@@ -23,21 +23,25 @@ class ElementQuery extends Query implements ElementQueryInterface{
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
      */
-    const EVENT_BEFORE_PREPARE = 'beforePrepare';
+    public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
      * @event Event An event that is triggered at the end of preparing an element query for the query builder.
      */
-    const EVENT_AFTER_PREPARE = 'afterPrepare';
+    public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
 
     // Properties
     // =========================================================================
+
+    public $dateCreated;
+    public $dateUpdated;
+    public $uid;
 
     /**
      * @var string|null The name of the [[ElementInterface]] class.

@@ -1,21 +1,45 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
- */
-
 namespace anu\helper;
 
 /**
- * ArrayHelper provides additional array functionality that you can use in your
- * application.
+ * ArrayHelper provides additional array functionality
  *
- * For more details and usage information on ArrayHelper, see the [guide article on array helpers](guide:helper-array).
- *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @since 2.0
+ * @author Robin Schambach
  */
 class ArrayHelper extends BaseArrayHelper
 {
+    public static function index($array, $key, $groups = []): array
+    {
+        $result = [];
+        $groups = (array) $groups;
+
+        foreach ($array as $element) {
+            $lastArray = &$result;
+
+            foreach ($groups as $group) {
+                $value = static::getValue($element, $group);
+                if (!array_key_exists($value, $lastArray)) {
+                    $lastArray[$value] = [];
+                }
+                $lastArray = &$lastArray[$value];
+            }
+
+            if ($key === null) {
+                if (!empty($groups)) {
+                    $lastArray[] = $element;
+                }
+            } else {
+                $value = static::getValue($element, $key);
+                if ($value !== null) {
+                    if (\is_float($value)) {
+                        $value = StringHelper::floatToString($value);
+                    }
+                    $lastArray[$value] = $element;
+                }
+            }
+            unset($lastArray);
+        }
+
+        return $result;
+    }
 }

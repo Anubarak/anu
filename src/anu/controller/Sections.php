@@ -9,6 +9,7 @@
 namespace anu\controller;
 use Anu;
 use anu\base\Controller;
+use anu\elements\Entry;
 use anu\models\EntryType;
 use anu\models\Section;
 use anu\records\EntryTypeRecord;
@@ -105,6 +106,39 @@ class Sections extends Controller{
         ]);
     }
 
+    /**
+     * @throws \anu\base\InvalidConfigException
+     * @throws \anu\base\Exception
+     * @throws \Throwable
+     */
+    public function actionSaveEntryType()
+    {
+        $entryType = $this->_getEntryType('id');
+        $this->_populateEntryType($entryType);
+
+        $fieldLayout = Anu::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout->type = Entry::class;
+
+
+        $entryType->setFieldLayout($fieldLayout);
+
+        if (Anu::$app->getSections()->saveEntryType($entryType)) {
+            echo "<pre>";
+            var_dump("wtf");
+            echo "</pre>";
+            die();
+        } else {
+            echo "<pre>";
+            var_dump($entryType->getErrors());
+            echo "</pre>";
+            die();
+        }
+
+        echo "<pre>";
+        var_dump($fieldLayout->getErrors());
+        echo "</pre>";
+        die();
+    }
 
     // private
     //===================================================================
@@ -142,12 +176,15 @@ class Sections extends Controller{
     }
 
     /**
-     * @return $entryType EntryType
+     * @param string $name
+     *
+     * @return \anu\models\EntryType $entryType EntryType
      * @throws \anu\base\InvalidConfigException
      */
-    private function _getEntryType(){
+    private function _getEntryType($name = 'entryTypeId')
+    {
         $request = Anu::$app->getRequest();
-        $id = $request->getParam('entryTypeId');
+        $id = $request->getParam($name);
 
         if(is_numeric($id) && $id !== null){
             $entryTypeRecord = EntryTypeRecord::find()->where(['id' => $id])->one();
@@ -166,9 +203,8 @@ class Sections extends Controller{
     private function _populateEntryType(EntryType $entryType){
         $request = Anu::$app->getRequest();
         $entryType->handle = $request->getParam('handle', $entryType->handle);
-        $id = $request->getParam('enrtyTypeId', $entryType->id);
+        $id = $request->getParam('id', $entryType->id);
         $entryType->id = is_numeric($id)? $id : null;
-        $entryType->type = $request->getParam('type', $entryType->type);
         $entryType->name = $request->getParam('name', $entryType->name);
     }
 }

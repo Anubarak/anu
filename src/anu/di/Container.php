@@ -3,6 +3,8 @@
 namespace anu\di;
 
 use anu\base\Component;
+use anu\base\InvalidConfigException;
+use anu\base\NotInstantiableException;
 use ReflectionClass;
 use Anu;
 use anu\helper\ArrayHelper;
@@ -47,11 +49,11 @@ class Container extends Component
      * they appear in the constructor declaration. If you want to skip some parameters, you should index the remaining
      * ones with the integers that represent their positions in the constructor parameter list.
      * @param array $config a list of name-value pairs that will be used to initialize the object properties.
+     *
      * @return object an instance of the requested class.
-     * @throws InvalidConfigException if the class cannot be recognized or correspond to an invalid definition
-     * @throws NotInstantiableException If resolved to an abstract class or an interface (since 2.0.9)
+     * @throws \anu\base\InvalidConfigException if the class cannot be recognized or correspond to an invalid definition
      */
-    public function get($class, $params = [], $config = [])
+    public function get($class, $params = [], array $config = [])
     {
         if (isset($this->_singletons[$class])) {
             // singleton
@@ -252,11 +254,13 @@ class Container extends Component
      * Creates an instance of the specified class.
      * This method will resolve dependencies of the specified class, instantiate them, and inject
      * them into the new instance of the specified class.
-     * @param string $class the class name
-     * @param array $params constructor parameters
-     * @param array $config configurations to be applied to the new instance
+     *
+     * @param string $class  the class name
+     * @param array  $params constructor parameters
+     * @param array  $config configurations to be applied to the new instance
+     *
      * @return object the newly created instance of the specified class
-     * @throws NotInstantiableException If resolved to an abstract class or an interface (since 2.0.9)
+     * @throws \anu\base\InvalidConfigException
      */
     protected function build($class, $params, $config)
     {

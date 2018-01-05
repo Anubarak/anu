@@ -11,6 +11,7 @@ namespace anu\models;
 use anu\base\ElementInterface;
 use anu\base\FieldGroup;
 use anu\base\FieldInterface;
+use anu\base\FieldTrait;
 use anu\base\Model;
 use anu\base\SavableComponent;
 use anu\db\Schema;
@@ -19,6 +20,10 @@ use anu\records\FieldRecord;
 use anu\validators\UniqueValidator;
 
 class Field extends SavableComponent implements FieldInterface{
+    // Traits
+    // =========================================================================
+
+    use FieldTrait;
 
     // Constants
     // =========================================================================
@@ -31,40 +36,26 @@ class Field extends SavableComponent implements FieldInterface{
      *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
-    const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
+    public const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is saved
      */
-    const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
+    public const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
 
     /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
      *
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
-    const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
+    public const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is deleted
      */
-    const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
+    public const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
 
-    public $id;
 
-    /**
-     * @var string $handle The handle of the field, unique value to fetch the field
-     */
-    public $handle;
-
-    /**
-     * @var string $name The value that is displayed in the frontend
-     */
-    public $name;
-
-    /**
-     * @var array $settings this is the array with all settings, it is stored serialized in the db
-     */
     public $settings = [];
 
     /**
@@ -73,28 +64,14 @@ class Field extends SavableComponent implements FieldInterface{
     public $value;
 
     /**
-     * @var string $instructions
-     */
-    public $instructions;
-
-    /**
      * @var string $type class of the field
      */
     public $type;
 
     /**
-     * @var int $groupId the id of the group of the field
-     */
-    public $groupId;
-
-    /**
-     * @var $oldHandle string the old handle of the field
-     */
-    public $oldHandle;
-
-
-    /**
      * @param Model $element
+     *
+     * @return mixed
      */
     public function getFieldValue(Model $element){
 
@@ -166,8 +143,9 @@ class Field extends SavableComponent implements FieldInterface{
      * }
      * ```
      *
-     * @param $value
-     * @param ElementInterface|null $element
+     * @param                 $value
+     * @param \anu\base\Model $element
+     *
      * @return string
      */
     public function getInputHtml($value, Model $element = null): string{
@@ -210,7 +188,8 @@ class Field extends SavableComponent implements FieldInterface{
      *
      * @return FieldGroupRecord
      */
-    public function getGroup(){
+    public function getGroup(): FieldGroupRecord
+    {
         if($this->groupId){
             return FieldGroupRecord::findOne($this->groupId);
         }

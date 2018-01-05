@@ -12,24 +12,12 @@ use anu\db\Query;
 use anu\elements\db\ElementQuery;
 use anu\elements\db\ElementQueryInterface;
 use anu\helper\ArrayHelper;
+use anu\helper\UploadFileHelper;
 use anu\models\Field;
 use anu\validators\UniqueValidator;
 
 abstract class Element extends Model implements ElementInterface
 {
-
-    /**
-     * @var integer the id of the element
-     */
-    public $id;
-
-    public $dateCreated;
-
-    public $dateUpdated;
-
-    public $uid;
-
-    public $type;
 
     // Traits
     // =========================================================================
@@ -42,14 +30,14 @@ abstract class Element extends Model implements ElementInterface
     // Statuses
     // -------------------------------------------------------------------------
 
-    const STATUS_ENABLED = 'enabled';
-    const STATUS_DISABLED = 'disabled';
+    public const STATUS_ENABLED = 'enabled';
+    public const STATUS_DISABLED = 'disabled';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_ESSENTIALS = 'essentials';
-    const SCENARIO_LIVE = 'live';
+    public const SCENARIO_ESSENTIALS = 'essentials';
+    public const SCENARIO_LIVE = 'live';
 
     // Events
     // -------------------------------------------------------------------------
@@ -60,24 +48,38 @@ abstract class Element extends Model implements ElementInterface
      *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
+    public const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
      * @event ModelEvent The event that is triggered after the element is saved
      */
-    const EVENT_AFTER_SAVE = 'afterSave';
+    public const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted
      *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
+    public const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
      * @event \yii\base\Event The event that is triggered after the element is deleted
      */
-    const EVENT_AFTER_DELETE = 'afterDelete';
+    public const EVENT_AFTER_DELETE = 'afterDelete';
+    // Private
+    // =========================================================================
+    /**
+     * @var string $_fieldParamNamePrefix the field handle name
+     */
+    private $_fieldParamNamePrefix;
+    /**
+     * @var
+     */
+    private $_fieldsByHandle;
+    /**
+     * @var array|null Record of the fields whose values have already been normalized
+     */
+    private $_normalizedFieldValues;
 
 
     // Static
@@ -129,23 +131,7 @@ abstract class Element extends Model implements ElementInterface
 
 
 
-    // Properties
-    // =========================================================================
 
-    /**
-     * @var
-     */
-    private $_fieldsByHandle;
-
-    /**
-     * @var
-     */
-    private $_fieldParamNamePrefix;
-
-    /**
-     * @var array|null Record of the fields whose values have already been normalized
-     */
-    private $_normalizedFieldValues;
 
 
     // Public Methods
@@ -176,6 +162,7 @@ abstract class Element extends Model implements ElementInterface
      * @param string $name The property name
      *
      * @return bool Whether the property is set
+     * @throws \anu\base\InvalidConfigException
      */
     public function __isset($name): bool
     {
@@ -193,6 +180,8 @@ abstract class Element extends Model implements ElementInterface
      * @param string $name The property name
      *
      * @return mixed The property value
+     * @throws \anu\base\InvalidConfigException
+     * @throws \anu\base\Exception
      * @throws UnknownPropertyException if the property is not defined
      * @throws InvalidCallException if the property is write-only.
      */
@@ -227,6 +216,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function attributes()
     {
@@ -246,6 +236,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function attributeLabels()
     {
@@ -299,7 +290,7 @@ abstract class Element extends Model implements ElementInterface
      *
      * @return void
      */
-    public function validateCustomFieldAttribute(string $attribute, array $params = null)
+    public function validateCustomFieldAttribute(string $attribute, array $params = null): void
     {
         /** @var Field $field */
         /** @var array|null $params */
@@ -323,6 +314,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function getFieldLayout()
     {
@@ -348,9 +340,10 @@ abstract class Element extends Model implements ElementInterface
         return null;
     }
 
-
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
+     * @throws \anu\base\Exception
      */
     public function getFieldValues(array $fieldHandles = null): array
     {
@@ -378,6 +371,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\Exception
      */
     public function getFieldValue(string $fieldHandle)
     {
@@ -401,10 +395,9 @@ abstract class Element extends Model implements ElementInterface
         unset($this->_normalizedFieldValues[$fieldHandle]);
     }
 
-
-
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function getContentTable(): string
     {
@@ -413,6 +406,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function getFieldColumnPrefix(): string
     {
@@ -421,6 +415,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function getFieldContext(): string
     {
@@ -433,6 +428,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function beforeSave(bool $isNew): bool
     {
@@ -454,6 +450,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function afterSave(bool $isNew)
     {
@@ -472,6 +469,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function beforeDelete(): bool
     {
@@ -491,6 +489,7 @@ abstract class Element extends Model implements ElementInterface
 
     /**
      * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
      */
     public function afterDelete()
     {
@@ -502,6 +501,41 @@ abstract class Element extends Model implements ElementInterface
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
             $this->trigger(self::EVENT_AFTER_DELETE);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldParamNamespace(string $namespace)
+    {
+        $this->_fieldParamNamePrefix = $namespace;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
+     */
+    public function setFieldValuesFromRequest(string $paramNamespace = '')
+    {
+        $this->setFieldParamNamespace($paramNamespace);
+        $values = Anu::$app->getRequest()->getParam($paramNamespace, []);
+
+        foreach ($this->fieldLayoutFields() as $field) {
+            // Do we have any post data for this field?
+            if (isset($values[$field->handle])) {
+                $value = $values[$field->handle];
+                //TODO file upload here....
+            } else {
+                if (!empty($this->_fieldParamNamePrefix) && UploadFileHelper::getUploadedFile($field->handle)) {
+                    // A file was uploaded for this field
+                    $value = null;
+                } else {
+                    continue;
+                }
+            }
+
+            $this->setFieldValue($field->handle, $value);
         }
     }
 
@@ -563,11 +597,11 @@ abstract class Element extends Model implements ElementInterface
         return $result;
     }
 
-
     /**
      * Returns each of this element’s fields.
      *
      * @return Field[] This element’s fields
+     * @throws \anu\base\InvalidConfigException
      */
     protected function fieldLayoutFields(): array
     {
@@ -586,6 +620,7 @@ abstract class Element extends Model implements ElementInterface
      * @param string $handle
      *
      * @return Field|null
+     * @throws \anu\base\InvalidConfigException
      */
     protected function fieldByHandle(string $handle)
     {

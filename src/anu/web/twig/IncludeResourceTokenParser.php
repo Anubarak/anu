@@ -8,6 +8,7 @@
 
 namespace anu\web\twig;
 
+use Anu;
 class IncludeResourceTokenParser  extends  \Twig_TokenParser{
     // Properties
     // =========================================================================
@@ -150,8 +151,7 @@ class IncludeResource_Node extends \Twig_Node
             ;
         }
 
-        $compiler
-            ->write("\\Anu\\anu()->template->{$function}(\$_js")
+        $compiler->write("Anu::\$app->template->{$function}(\$_js")
         ;
 
         if ($this->getAttribute('first'))

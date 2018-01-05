@@ -7,6 +7,8 @@
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
 
+{% set model = model is defined? model : false %}
+
 {% if not static %}
     {% set input = field.getInputHtml(value, element) %}
 {% else %}
@@ -24,6 +26,7 @@
         errors: errors,
         input: input,
         fieldType: className(field)
+        model: model
     } only %}
         {% block attr %}data-type="{{ fieldType }}"{% endblock %}
     {% endembed %}

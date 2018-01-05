@@ -6,11 +6,12 @@
 {% set controller = 'entryTypeController' %}
 {% set title = "EntryTypes" %}
 {% block headerButton %}
-    <a href="" id="save" class="btn  red lighten-2">{{ "Save EntryType"|t }}</a>
+    <a href="" ng-click="save();" class="btn waves-effect waves-light red lighten-2">{{ "Save EntryType"|t }}</a>
 {% endblock %}
 
 
 {% block pageContent %}
+    {% set attributes = anu.getTemplate().addAnuJsObject(entryType, 'entryType') %}
     <div class="card">
         <div class="header">
             <h2>
@@ -33,19 +34,40 @@
                 </li>
             </ul>
         </div>
-        <div class="row">
-            <div class="col s12">
-                <ul class="tabs">
-                    <li class="tab col s3"><a class="active" href="#test1">Test 1</a></li>
-                    <li class="tab col s3"><a href="#test2">Test 2</a></li>
-                    <li class="tab col s3 disabled"><a href="#test3">Disabled Tab</a></li>
-                    <li class="tab col s3"><a href="#test4">Test 4</a></li>
-                </ul>
+        <div class="body">
+
+            <div class="row">
+                <div class="col s12">
+                    <ul class="tabs">
+                        <li class="tab col s3"><a class="active" href="#options">{{ "Optionen"|t }}</a></li>
+                        <li class="tab col s3"><a href="#fieldLayout">{{ "Field Layout"|t }}</a></li>
+                    </ul>
+                </div>
+                <div id="options" class="col s12">
+
+                    {{ forms.textField({
+                        id: "name",
+                        name: "name",
+                        required: true,
+                        value: entryType.name,
+                        label: 'Name'|t,
+                        model: 'attributes.name'
+                    }) }}
+
+                    {{ forms.textField({
+                        id: "handle",
+                        name: "handle",
+                        required: true,
+                        value: entryType.handle,
+                        label: 'Handle'|t,
+                        model: 'attributes.handle'
+                    }) }}
+                </div>
+
+                <div field-layout="fieldLayout" groups="groups" field-layout="fieldLayout"></div>
+                {% include '_includes/fieldLayout.twig' %}
+
             </div>
-            <div id="test1" class="col s12">Test 1</div>
-            <div id="test2" class="col s12">Test 2</div>
-            <div id="test3" class="col s12">Test 3</div>
-            <div id="test4" class="col s12">Test 4</div>
         </div>
     </div>
 

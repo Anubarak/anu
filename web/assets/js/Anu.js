@@ -1,5 +1,5 @@
 // angular app
-const myApp = angular.module('myApp',['ngAnimate']).config(function($interpolateProvider, $httpProvider){
+const myApp = angular.module('myApp', ['ngAnimate', 'ui.sortable']).config(function ($interpolateProvider, $httpProvider) {
     $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
 
     // Use x-www-form-urlencoded Content-Type

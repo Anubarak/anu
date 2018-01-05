@@ -12,7 +12,9 @@ use anu\db\ActiveRecord;
 
 /**
  * Section record connects to {{%sections}} table
- *
+ * @property mixed $handle
+ * @property mixed $name
+ * @property mixed $type
  * @author Robin Schambach
  */
 class SectionRecord extends ActiveRecord{

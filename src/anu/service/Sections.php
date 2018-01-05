@@ -28,47 +28,48 @@ class Sections extends Component{
     /**
      * @event ElementEvent The event that is triggered before an element is deleted.
      */
-    const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
+    public const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
      * @event ElementEvent The event that is triggered after an element is deleted.
      */
-    const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
+    public const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      */
-    const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
+    public const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
      */
-    const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
+    public const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
      */
-    const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
+    public const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is saved.
      */
-    const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
+    public const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
-    const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
+    public const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
      * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
      */
-    const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
+    public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
     // private properties
     //===============================================================
 
     private $_sectionsById;
+    private $_sectionsByHandle;
 
     /**
      * @return Section[]
@@ -92,7 +93,6 @@ class Sections extends Component{
         return $this->_sectionsById;
     }
 
-
     /**
      * Saves a section.
      *
@@ -100,6 +100,9 @@ class Sections extends Component{
      * @param bool    $runValidation Whether the section should be validated
      *
      * @return bool
+     * @throws \anu\base\InvalidParamException
+     * @throws \anu\base\InvalidConfigException
+     * @throws \anu\db\Exception
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Throwable if reasons
      */
@@ -188,7 +191,6 @@ class Sections extends Component{
         return true;
     }
 
-
     /**
      * Saves an entry type.
      *
@@ -196,6 +198,9 @@ class Sections extends Component{
      * @param bool      $runValidation Whether the entry type should be validated
      *
      * @return bool Whether the entry type was saved successfully
+     * @throws \anu\base\InvalidParamException
+     * @throws \anu\db\Exception
+     * @throws \anu\base\InvalidConfigException
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Throwable if reasons
      */
@@ -236,6 +241,7 @@ class Sections extends Component{
         $entryTypeRecord->sectionId = $entryType->sectionId;
         $entryTypeRecord->name = $entryType->name;
         $entryTypeRecord->handle = $entryType->handle;
+        $entryTypeRecord->fieldLayoutId = $entryType->fieldLayoutId;
         $entryTypeRecord->hasTitleField = $entryType->hasTitleField;
         $entryTypeRecord->titleLabel = ($entryType->hasTitleField ? $entryType->titleLabel : null);
         $entryTypeRecord->titleFormat = (!$entryType->hasTitleField ? $entryType->titleFormat : null);
@@ -243,10 +249,11 @@ class Sections extends Component{
         $transaction = Anu::$app->getDb()->beginTransaction();
         try {
             // Save the field layout
-            //$fieldLayout = $entryType->getFieldLayout();
-            //Craft::$app->getFields()->saveLayout($fieldLayout);
-            $entryType->fieldLayoutId = 0;//$fieldLayout->id;
-            $entryTypeRecord->fieldLayoutId = 0;//$fieldLayout->id;
+            $fieldLayout = $entryType->getFieldLayout();
+            Anu::$app->getFields()->saveLayout($fieldLayout);
+
+            $entryType->fieldLayoutId = (int) $fieldLayout->id;
+            $entryTypeRecord->fieldLayoutId = (int) $fieldLayout->id;
 
             // Save the entry type
             $entryTypeRecord->save(false);
@@ -259,7 +266,6 @@ class Sections extends Component{
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -272,5 +278,106 @@ class Sections extends Component{
         }
 
         return true;
+    }
+
+    /**
+     * Returns a section by its ID.
+     *
+     * @param int $sectionId
+     *
+     * @return Section|null
+     */
+    public function getSectionById(int $sectionId): ?Section
+    {
+        if (!$sectionId) {
+            return null;
+        }
+
+        if ($this->_sectionsById !== null && array_key_exists($sectionId, $this->_sectionsById)) {
+            return $this->_sectionsById[$sectionId];
+        }
+
+        $result = $this->_createSectionQuery()->where(['sections.id' => $sectionId])->one();
+
+        return $this->_sectionsById[$sectionId] = $result ? new Section($result) : null;
+    }
+
+    /**
+     * Returns a section by its Handle.
+     *
+     * @param string $sectionHandle
+     *
+     * @return Section|null
+     */
+    public function getSectionByHandle(string $sectionHandle): ?Section
+    {
+        if (!$sectionHandle) {
+            return null;
+        }
+
+        if ($this->_sectionsByHandle !== null && array_key_exists($sectionHandle, $this->_sectionsByHandle)) {
+            return $this->_sectionsByHandle[$sectionHandle];
+        }
+
+        $result = $this->_createSectionQuery()->where(['sections.handle' => $sectionHandle])->one();
+
+        return $this->_sectionsByHandle[$sectionHandle] = $result ? new Section($result) : null;
+    }
+
+    /**
+     * Returns a section’s entry types.
+     *
+     * @param int $sectionId
+     *
+     * @return EntryType[]
+     */
+    public function getEntryTypesBySectionId(int $sectionId): array
+    {
+        $results = $this->_createEntryTypeQuery()->where(['sectionId' => $sectionId])->orderBy(['sortOrder' => SORT_ASC])->all();
+
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
+        }
+
+        return $results;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving sections.
+     *
+     * @return Query
+     */
+    private function _createSectionQuery(): Query
+    {
+        return (new Query())->select(
+                [
+                    'sections.id',
+                    'sections.name',
+                    'sections.handle',
+                    'sections.type',
+                ]
+            )->from(['{{%sections}} sections'])->orderBy(['name' => SORT_ASC]);
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createEntryTypeQuery(): Query
+    {
+        return (new Query())->select(
+                [
+                    'id',
+                    'sectionId',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'hasTitleField',
+                    'titleLabel',
+                    'titleFormat',
+                ]
+            )->from(['{{%entrytypes}}']);
     }
 }

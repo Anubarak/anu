@@ -1,0 +1,36 @@
+{% extends 'layout/site.twig' %}
+{% import "_includes/forms.twig" as forms %}
+
+
+{% set fullPageForm = true %}
+{% set controller = 'elementIndexController' %}
+{% set title = "Entries"|t %}
+{% block headerButton %}
+    <a href="{{ ('admin/entries/'~section.handle~'/new')|url }}" class="btn waves-effect waves-light red lighten-2">{{ "New Entry"|t }}</a>
+{% endblock %}
+
+{% block sideNav %}
+    <div>
+        {#{% set groups = anu.fields.getAllGroups %}
+        <div class="list-group list-group-entry-type">
+            <button ng-repeat="group in groups" ng-click="changeGroup(group.id);" type="button" class="list-group-item">{[{ group.name }]}</button>
+        </div>
+        <a ng-click="newGroup();" href="" class="waves-effect waves-light black-text btn blue-grey lighten-5">{{ "New Group"|t }}</a>
+        #}
+    </div>
+{% endblock %}
+
+
+{% block pageContent %}
+    <div class="card">
+
+        <div class="header">
+            <h2>
+                {{ "Entries"|t }}
+            </h2>
+        </div>
+        <div class="body table-responsive">
+        </div>
+    </div>
+
+{% endblock %}

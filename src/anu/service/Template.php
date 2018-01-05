@@ -10,8 +10,10 @@ namespace anu\service;
 
 use anu\base\Component;
 use anu\base\Event;
+use anu\db\Query;
 use anu\events\RegisterCpNavEvent;
 use anu\helper\Url;
+use anu\records\EntryTypeRecord;
 use anu\web\twig\IncludeResourceTokenParser;
 use Twig\Environment;
 
@@ -67,11 +69,13 @@ class Template extends Component{
             : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig($this->_templateMode));
     }
 
-
     /**
      * Creates a new Twig environment.
      *
      * @return Environment
+     * @throws \Twig_Error_Syntax
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Loader
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidConfigException
@@ -108,9 +112,26 @@ class Template extends Component{
 
         if(\Anu::$app->getRequest()->isCpRequest()){
             $renderCpNav = new \Twig_Function('renderCpNav', function () {
+                $sections = (new Query())->select(
+                        [
+                            'name',
+                            'handle'
+                        ]
+                    )->from('{{%sections}}')->all();
+                $sectionMenu = [];
+                foreach ($sections as $section) {
+                    $sectionMenu[] = [
+                        'label' => $section['name'],
+                        'url'   => Url::to('admin/entries/' . $section['handle'])
+                    ];
+                }
                 $event = new RegisterCpNavEvent([
                     'items' => [
-                        'settings'  => [
+                        'entries'  => [
+                            'label' => \Anu::t('anu', 'Entries'),
+                            'sub'   => $sectionMenu
+                        ],
+                        'settings' => [
                             'label' => 'settings',
                             'sub'   => [
                                 ['label' => 'Fields', 'url' => Url::to('admin/fields')],
@@ -141,7 +162,8 @@ class Template extends Component{
 
         $renderFooter = new \Twig_Function('renderFooter', function () {
             echo $this->render('_partials/footer.twig', [
-                'jsCode'    => $this->getJsCode()
+                'jsCode'  => $this->getJsCode(),
+                'jsFiles' => $this->_jsFiles,
             ]);
         });
         $this->_twig[$templateMode]->addFunction($renderFooter);
