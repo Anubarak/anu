@@ -1,70 +1,61 @@
-{% includeJsFile(assetUrl ~'/js/controller/fieldLayoutController.js') %}
+{% includeJsFile(assetUrl ~'/js/directives/form.js') %}
 
-{% set groups = anu.getFields().getAllGroups() %}
-{% set fieldLayout = entryType.getFieldLayout() %}
-{% set json = anu.getTemplate().addAnuJsObject(fieldLayout, 'fieldLayout') %}
+<script type="text/ng-template" id="/fieldLayout.html">
 
-<script type="text/ng-template" id="/fieldLayoutTemplate.html">
-    <div id="fieldLayout" class="col s12">
-        <div class="row">
 
-            <ul ui-sortable="sortableOptions"
-                class="collection col-sm-2 droppable"
-                ng-model="tab.fields"
-                ng-repeat="tab in fieldLayout.tabs"
-            >
-                <li data-tab="0" class="list-group-item red lighten-2">{[{ tab.name }]}</li>
-                <li ng-repeat="field in tab.fields"
-                    ng-model="field"
-                    data-field="{[{ field.id }]}"
-                    class="collection-item"
-                >
+    <div class="row">
+        <ul class="tabs">
+            <li ng-repeat="tab in fieldLayout.tabs" class="tab col">
+                <a href="#{[{ tab.name|snakeCase:'-' }]}">{[{ tab.name }]}
+                </a>
+            </li>
+        </ul>
+    </div>
 
-                    {[{ field.name }]}
-                    <div class="right">
-                        <div class="dropdown">
-                            <i class="material-icons" data-toggle="dropdown" style="cursor: pointer">settings</i>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a ng-click="removeField(field, tab)" href="javascript:void(0);">{{ "Remove"|t }}</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">{{ "Required"|t }}</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </li>
-            </ul>
+
+    <div ng-show="element.type.hasTitleField == '1'" class="row">
+        <div class="col s12">
+            <div class="field">
+                <div class="input-field">
+                    <input class="text fullwidth " ng-model="element.title" id="title" type="text" name="title">
+                    <label class="required" for="title">
+                        <span>{[{ element.type.titleLabel }]} <span class="red-text">*</span></span>
+                    </label>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="row">
-            <a ng-click="addGroup();" href="javascript:void(0);"
-               class="btn waves-effect waves-light red lighten-2">{{ "Add Group"|t }}</a>
+    <div class="row">
+        <div ng-repeat="tab in fieldLayout.tabs" id="{[{tab.name|snakeCase:'-'}]}" class="col s12">
+            <div class="row" ng-repeat="field in tab.fields">
+                <div field="field" element="element"></div>
+            </div>
         </div>
-
-        <div class="row">
-            <ul
-                    ng-repeat="group in groups"
-                    ng-show="group.fields.length > 0"
-                    class="collection col-sm-2"
-                    ui-sortable="sortableOptions"
-                    ng-model="group.fields"
-            >
-                <li data-field="{[{ group.id }]}" class="collection-item red lighten-2">{[{ group.name }]}</li>
-                <li ng-repeat="field in group.fields | orderBy:'name' | filter: notUsedFieldFilter"
-                    ng-model="field"
-                    data-field="{[{ field.id }]}"
-                    class="collection-item"
-                >
-
-                    {[{ field.name }]}
-                </li>
-            </ul>
-        </div>
-
     </div>
 </script>
 
-{#
-#}
+
+<script type="text/ng-template" id="/anu\fields\NumberField.html">
+    <div class="field">
+        <div class="input-field">
+            <input class="text fullwidth " ng-model="element[field.handle]" id="field:{[{field.id}]}" type="number" name="{[{field.handle}]}">
+            <label ng-class="{required: field.required == 1}" for="field:{[{field.id}]}">
+                <span ng-show="field.required == 1">{[{field.name}]} <span class="red-text">*</span></span>
+                <span ng-show="field.required != 1">{[{field.name}]}</span>
+            </label>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="/anu\fields\TextField.html">
+    <div class="field">
+        <div class="input-field">
+            <input class="text fullwidth " ng-model="element[field.handle]" id="field:{[{field.id}]}" type="text" name="{[{field.handle}]}">
+            <label ng-class="{required: field.required == 1}" for="field:{[{field.id}]}">
+                <span ng-show="field.required == 1">{[{field.name}]} <span class="red-text">*</span></span>
+                <span ng-show="field.required != 1">{[{field.name}]}</span>
+            </label>
+        </div>
+    </div>
+</script>

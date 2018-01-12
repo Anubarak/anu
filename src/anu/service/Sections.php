@@ -21,10 +21,6 @@ use anu\records\EntryTypeRecord;
 use anu\records\SectionRecord;
 
 class Sections extends Component{
-
-
-
-
     /**
      * @event ElementEvent The event that is triggered before an element is deleted.
      */
@@ -75,7 +71,8 @@ class Sections extends Component{
      * @return Section[]
      * @throws \anu\base\InvalidConfigException
      */
-    public function getAllSections(){
+    public function getAllSections(): array
+    {
         if($this->_sectionsById !== null){
             return $this->_sectionsById;
         }
@@ -377,6 +374,10 @@ class Sections extends Component{
                     'hasTitleField',
                     'titleLabel',
                     'titleFormat',
+                    'uid',
+                    'dateCreated',
+                    'dateUpdated',
+                    'sortOrder'
                 ]
             )->from(['{{%entrytypes}}']);
     }

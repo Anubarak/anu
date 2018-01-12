@@ -8,6 +8,8 @@
 
 namespace anu\fields;
 use Anu;
+use anu\base\Model;
+use anu\db\Schema;
 use anu\models\Field;
 
 class NumberField extends Field{
@@ -19,5 +21,15 @@ class NumberField extends Field{
      */
     public static function getFieldLabel():string {
         return Anu::t('anu', 'Number');
+    }
+
+    public function getContentColumnType(): string
+    {
+        return Schema::TYPE_DECIMAL;
+    }
+
+    public function normalizeValue($value, Model $element = null)
+    {
+        return (float) $value;
     }
 }

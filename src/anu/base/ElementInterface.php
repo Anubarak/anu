@@ -220,6 +220,11 @@ interface ElementInterface
      */
     public function setFieldValue(string $fieldHandle, $value);
 
+    /**
+     * The url in the cp to edit the entry
+     * @return string
+     */
+    public function getCpEditUrl(): string;
 
     /**
      * Returns the name of the table this element’s content is stored in.

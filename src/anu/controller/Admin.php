@@ -19,14 +19,17 @@ use anu\records\UserRecord;
  * @author Robin Schambach
  */
 class Admin extends Controller{
-
     /**
      * @return string
+     * @throws \anu\base\InvalidRouteException
+     * @throws \Twig_Error_Syntax
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Loader
      * @throws \Throwable
      * @throws \anu\base\InvalidConfigException
-     * @throws \anu\db\Exception
      */
-    public function actionIndex(){
+    public function actionIndex(): string
+    {
         if(Anu::$app->getUser()->currentUser()){
             return $this->_renderDashBoard();
         }
@@ -42,7 +45,8 @@ class Admin extends Controller{
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    public function actionDashboard(){
+    public function actionDashboard(): string
+    {
         $this->redirectToLogin();
         return $this->_renderDashBoard();
     }
@@ -55,7 +59,8 @@ class Admin extends Controller{
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    public function actionSections(){
+    public function actionSections(): string
+    {
         $this->redirectToLogin();
         return Anu::$app->getTemplate()->render('pages/sections.twig', [
             'sections'  => Anu::$app->getSections()->getAllSections()
@@ -70,7 +75,8 @@ class Admin extends Controller{
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    public function actionFields(){
+    public function actionFields(): string
+    {
         $this->redirectToLogin();
         return \Anu::$app->template->render('pages/fields.twig', [
 
@@ -87,7 +93,8 @@ class Admin extends Controller{
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    private function _renderDashBoard(){
+    private function _renderDashBoard(): string
+    {
         return \Anu::$app->template->render('pages/index.twig', [
         ]);
     }
@@ -100,7 +107,8 @@ class Admin extends Controller{
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    private function _renderLogin(){
+    private function _renderLogin(): string
+    {
         return \Anu::$app->template->render('pages/login.twig', [
             'redirect'  => Anu::$app->getSession()->get('redirectUrl', 'admin/dashboard')
         ]);

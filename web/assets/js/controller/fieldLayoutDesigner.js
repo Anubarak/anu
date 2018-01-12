@@ -1,4 +1,4 @@
-myApp.directive('fieldLayout', function ($http) {
+myApp.directive('fieldLayoutDesigner', function ($http) {
     return {
         templateUrl: '/fieldLayoutTemplate.html',
         scope: {
@@ -6,7 +6,6 @@ myApp.directive('fieldLayout', function ($http) {
             fieldLayout: '=fieldLayout'
         },
         link: function (scope, element, attrs) {
-            console.log(scope);
             scope.sortableOptions = {
                 placeholder: "app",
                 connectWith: ".droppable",

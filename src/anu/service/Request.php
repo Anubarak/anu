@@ -64,7 +64,7 @@ class Request extends Component{
                         }
                     }
                 }
-                throw new InvalidRouteException();
+
             }catch(Exception $exception){
                 throw new InvalidRouteException();
             }
@@ -172,7 +172,7 @@ class Request extends Component{
      * @return mixed|null
      */
     public function getParam($handle = null, $default = null){
-        if($handle === null){
+        if ($handle === null || $handle === '') {
             return $this->_params;
         }
         return isset($this->_params[$handle])? $this->_params[$handle] : $default;

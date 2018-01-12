@@ -753,7 +753,8 @@ class Model extends Component implements JsonSerializable{
      *
      * @return array
      */
-    public function jsonSerialize() {;
+    public function jsonSerialize()
+    {
         return $this->getAttributes();
     }
 

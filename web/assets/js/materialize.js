@@ -2599,6 +2599,7 @@ if (Vel) {
 
                 // Finds right attribute for indicator based on active tab.
                 // el: jQuery Object
+
                 var calcRightPos = function (el) {
                     return Math.ceil($tabs_width - el.position().left - el[0].getBoundingClientRect().width - $this.scrollLeft());
                 };

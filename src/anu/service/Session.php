@@ -9,6 +9,7 @@
 namespace anu\service;
 use Anu;
 use anu\base\Component;
+use anu\helper\ArrayHelper;
 use anu\records\UserRecord;
 // TODO generate PHP doc
 class Session extends Component{
@@ -16,13 +17,17 @@ class Session extends Component{
     /**
      *
      */
-    const ERROR_KEY = 'errors';
+    public const ERROR_KEY = 'errors';
 
     /**
      *
      */
-    const NOTICE_KEY = 'notices';
-
+    public const NOTICE_KEY = 'notices';
+    public const ROUTE_MANAGER_KEY = 'routeManager';
+    /**
+     * @var array
+     */
+    private $_routeParams = [];
     /**
      * Returns the session variable value with the session variable name.
      * If the session variable does not exist, the `$defaultValue` will be returned.
@@ -141,11 +146,30 @@ class Session extends Component{
         return $response;
     }
 
+    /**
+     * @return array
+     */
     public function getAllFlashs(){
         return [
             'errors'    => $this->getErrors(),
             'notices'   => $this->getNotices()
         ];
+    }
+
+    /**
+     * @param array $params
+     */
+    public function setRouteParams(array $params)
+    {
+        $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+    }
+
+    /**
+     * @return array
+     */
+    public function getRouteParams()
+    {
+        return $this->_routeParams;
     }
 
 }

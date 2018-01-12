@@ -4,6 +4,7 @@ const myApp = angular.module('myApp', ['ngAnimate', 'ui.sortable']).config(funct
 
     // Use x-www-form-urlencoded Content-Type
     $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
+    $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
     /**
      * The workhorse; converts an object to x-www-form-urlencoded serialization.
      * @param {Object} obj
@@ -84,7 +85,24 @@ var displayErrors = function(errors, form){
             label.first().attr('data-error', message);
             label.first().attr('data-test', message);
             item.addClass('invalid');
-            console.log(label.first().data('error'));
         })
     }
 };
+
+
+var SNAKE_CASE_REGEXP = /[A-Z]/g;
+myApp.filter('snakeCase', function () {
+    return function (name, separator) {
+        separator = separator || '_';
+        name = name.replace(' ', '');
+        return name.replace(SNAKE_CASE_REGEXP, function (letter, pos) {
+            return (pos ? separator : '') + letter.toLowerCase();
+        });
+    };
+});
+
+myApp.filter('url', function () {
+    return function (name) {
+        return anu.paths.baseUrl + name;
+    };
+});

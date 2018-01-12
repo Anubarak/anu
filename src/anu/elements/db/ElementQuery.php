@@ -10,9 +10,12 @@ namespace anu\elements\db;
 
 use anu\base\Element;
 use anu\base\ElementInterface;
+use anu\base\FieldInterface;
+use anu\behaviors\ContentBehavior;
 use anu\db\Query;
 use anu\db\QueryAbortedException;
 use anu\events\CancelableEvent;
+use anu\events\PopulateElementEvent;
 use anu\models\FieldLayout;
 
 class ElementQuery extends Query implements ElementQueryInterface{
@@ -42,6 +45,12 @@ class ElementQuery extends Query implements ElementQueryInterface{
     public $dateCreated;
     public $dateUpdated;
     public $uid;
+    /**
+     * @var bool Whether results should be returned in the order specified by [[id]].
+     */
+    public $fixedOrder = false;
+    public $asArray = false;
+    private $customFields;
 
     /**
      * @var string|null The name of the [[ElementInterface]] class.
@@ -84,15 +93,17 @@ class ElementQuery extends Query implements ElementQueryInterface{
 
     /**
      * @param \anu\db\QueryBuilder $builder
+     *
      * @return Query
      * @throws QueryAbortedException
+     * @throws \anu\base\InvalidConfigException
      */
-    public function prepare($builder)
+    public function prepare($builder): Query
     {
 
         // Is the query already doomed?
         if ($this->id !== null && empty($this->id)) {
-            throw new QueryAbortedException("Query has no valid id");
+            throw new QueryAbortedException('Query has no valid id');
         }
 
         /** @var Element $class */
@@ -106,7 +117,7 @@ class ElementQuery extends Query implements ElementQueryInterface{
 
         // Give other classes a chance to make changes up front
         if (!$this->beforePrepare()) {
-            throw new QueryAbortedException("Query was aborted before Prepare");
+            throw new QueryAbortedException('Query was aborted before Prepare');
         }
 
 
@@ -116,18 +127,32 @@ class ElementQuery extends Query implements ElementQueryInterface{
 
         $this->subQuery
             ->addSelect([
-                'elementsId' => 'elements.id',
+                            'elementsId' => 'elements.id',
+                            'type'       => 'elements.type',
             ])
             ->from(['elements' => '{{%elements}}'])
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);
+
+        if ($class::hasContent() && $this->contentTable !== null) {
+            $this->customFields = $this->customFields();
+            $this->_joinContentTable($class);
+        } else {
+            $this->customFields = null;
+        }
+
+
         if($this->where){
             $this->subQuery->andWhere($this->where);
         }
 
         if ($this->id) {
             $this->subQuery->andWhere(['elements.id' => $this->id]);
+        }
+
+        if ($this->uid) {
+            $this->subQuery->andWhere(['elements.uid' => $this->uid]);
         }
 
         // Give other classes a chance to make changes up front
@@ -139,6 +164,16 @@ class ElementQuery extends Query implements ElementQueryInterface{
         // Pass the query back
         return $this->query;
 
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'customFields' => ContentBehavior::class,
+        ];
     }
 
     protected function beforePrepare(): bool
@@ -178,15 +213,6 @@ class ElementQuery extends Query implements ElementQueryInterface{
     {
         if (empty($rows)) {
             return [];
-        }
-
-        // Should we set a search score on the elements?
-        if ($this->_searchScores !== null) {
-            foreach ($rows as &$row) {
-                if (isset($this->_searchScores[$row['id']])) {
-                    $row['searchScore'] = $this->_searchScores[$row['id']];
-                }
-            }
         }
 
         return $this->_createElements($rows);
@@ -495,7 +521,7 @@ class ElementQuery extends Query implements ElementQueryInterface{
      *
      * @return ElementInterface
      */
-    private function _createElement(array $row)
+    private function _createElement(array $row): ElementInterface
     {
 
         /** @var Element $class */
@@ -533,14 +559,154 @@ class ElementQuery extends Query implements ElementQueryInterface{
             $element->setFieldValues($fieldValues);
         }
 
-        // Fire an 'afterPopulateElement' event
-        /*if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
+        //Fire an 'afterPopulateElement' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row
             ]));
-        }*/
+        }
 
         return $element;
+    }
+
+    /**
+     * @return array
+     * @throws \anu\base\InvalidConfigException
+     */
+    protected function customFields(): array
+    {
+        $contentService = \Anu::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'global';
+        $fields = \Anu::$app->getFields()->getAllFields();
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $fields;
+    }
+
+    /**
+     * Joins the content table into the query being prepared.
+     *
+     * @param string $class
+     *
+     * @throws QueryAbortedException
+     * @throws \anu\base\InvalidConfigException
+     */
+    private function _joinContentTable(string $class)
+    {
+        // Join in the content table on both queries
+        $this->subQuery->innerJoin($this->contentTable . ' content', '[[content.elementId]] = [[elements.id]]');
+        $this->subQuery->addSelect(['contentId' => 'content.id']);
+
+        $this->query->innerJoin($this->contentTable . ' content', '[[content.id]] = [[subquery.contentId]]');
+
+        // Select the content table columns on the main query
+        $this->query->addSelect(['contentId' => 'content.id']);
+
+        if ($class::hasTitles()) {
+            $this->query->addSelect(['content.title']);
+        }
+
+        if (\is_array($this->customFields)) {
+            $contentService = \Anu::$app->getContent();
+            $originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
+            $fieldAttributes = $this->getBehavior('customFields');
+
+            foreach ($this->customFields as $field) {
+                /** @var \anu\models\Field $field */
+                if ($field::hasContentColumn()) {
+                    $this->query->addSelect(['content.' . $this->_getFieldContentColumnName($field)]);
+                }
+
+                $handle = $field->handle;
+
+                // In theory all field handles will be accounted for on the ElementQueryBehavior, but just to be safe...
+                if (isset($fieldAttributes->$handle)) {
+                    $fieldAttributeValue = $fieldAttributes->$handle;
+                } else {
+                    $fieldAttributeValue = null;
+                }
+
+                // Set the field's column prefix on the Content service.
+                if ($field->columnPrefix !== null) {
+                    $contentService->fieldColumnPrefix = $field->columnPrefix;
+                }
+
+                $fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
+
+                // Set it back
+                $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
+
+                // Need to bail early?
+                if ($fieldResponse === false) {
+                    throw new QueryAbortedException('Field does not response');
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a field’s corresponding content column name.
+     *
+     * @param FieldInterface $field
+     *
+     * @return string
+     */
+    private function _getFieldContentColumnName(FieldInterface $field): string
+    {
+        /** @var \anu\models\Field $field */
+        return ($field->columnPrefix ?: 'field_') . $field->handle;
+    }
+
+    /**
+     * Converts found rows into element instances
+     *
+     * @param array $rows
+     *
+     * @return array|Element[]
+     */
+    private function _createElements(array $rows)
+    {
+        $elements = [];
+
+        if ($this->asArray === true) {
+            if ($this->indexBy === null) {
+                return $rows;
+            }
+
+            foreach ($rows as $row) {
+                if (\is_string($this->indexBy)) {
+                    $key = $row[$this->indexBy];
+                } else {
+                    $key = \call_user_func($this->indexBy, $row);
+                }
+
+                $elements[$key] = $row;
+            }
+        } else {
+            foreach ($rows as $row) {
+                $element = $this->_createElement($row);
+
+                // Add it to the elements array
+                if ($this->indexBy === null) {
+                    $elements[] = $element;
+                } else {
+                    if (\is_string($this->indexBy)) {
+                        $key = $element->{$this->indexBy};
+                    } else {
+                        $key = \call_user_func($this->indexBy, $element);
+                    }
+
+                    $elements[$key] = $element;
+                }
+            }
+
+            //ElementHelper::setNextPrevOnElements($elements);
+
+            // Should we eager-load some elements onto these?
+        }
+
+        return $elements;
     }
 }

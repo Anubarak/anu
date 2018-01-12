@@ -503,10 +503,13 @@ class ActiveRecord extends BaseActiveRecord
 
     /**
      * Inserts an ActiveRecord into DB without considering transaction.
+     *
      * @param array $attributes list of attributes that need to be saved. Defaults to `null`,
-     * meaning all attributes that are loaded from DB will be saved.
+     *                          meaning all attributes that are loaded from DB will be saved.
+     *
      * @return bool whether the record is inserted successfully.
      * @throws InvalidConfigException
+     * @throws \Exception
      */
     protected function insertInternal($attributes = null)
     {

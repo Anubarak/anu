@@ -12,6 +12,7 @@ use anu\base\Component;
 use anu\base\Element;
 use anu\base\ElementInterface;
 use anu\db\Exception;
+use anu\elements\Entry;
 use anu\events\ElementEvent;
 use anu\records\ElementRecord;
 
@@ -25,27 +26,29 @@ class Elements extends Component{
     /**
      * @event ElementEvent The event that is triggered before an element is deleted.
      */
-    const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
+    public const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is deleted.
      */
-    const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
+    public const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      */
-    const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
+    public const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
      */
-    const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+    public const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
      * @param ElementInterface $element
-     * @param bool $runValidation
+     * @param bool             $runValidation
+     *
      * @return bool
+     * @throws \anu\base\InvalidParamException
      * @throws \anu\base\InvalidConfigException
      * @throws \Throwable
      * @throws Exception
@@ -82,7 +85,7 @@ class Elements extends Component{
                 }
             } else {
                 $elementRecord = new ElementRecord();
-                $elementRecord->type = get_class($element);
+                $elementRecord->type = \get_class($element);
             }
             // set attributes
             $elementRecord->fieldLayoutId = $element->fieldLayoutId;
@@ -115,7 +118,7 @@ class Elements extends Component{
             }
 
             // Save the content
-            if (false && $element::hasContent()) {
+            if ($element::hasContent()) {
                 \Anu::$app->getContent()->saveContent($element);
             }
 
@@ -135,5 +138,24 @@ class Elements extends Component{
             ]));
         }
         return true;
+    }
+
+    // Query objects
+    // ============================================================
+
+    /**
+     * @return \anu\elements\db\ElementQuery|\anu\elements\db\ElementQueryInterface|\anu\elements\db\EntryQuery
+     */
+    public function entries()
+    {
+        return Entry::find();
+    }
+
+    /**
+     * @return \anu\elements\db\UserQuery
+     */
+    public function users()
+    {
+        return \anu\elements\User::find();
     }
 }

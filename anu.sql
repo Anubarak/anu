@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Erstellungszeit: 05. Jan 2018 um 17:30
+-- Erstellungszeit: 12. Jan 2018 um 17:28
 -- Server-Version: 10.1.28-MariaDB
 -- PHP-Version: 7.1.11
 
@@ -85,9 +85,17 @@ CREATE TABLE `content` (
   `dateUpdated` datetime NOT NULL,
   `uid` char(36) NOT NULL DEFAULT '0',
   `field_text` varchar(255) DEFAULT NULL,
-  `field_number` varchar(255) DEFAULT NULL,
+  `field_number` decimal(65,0) DEFAULT NULL,
   `field_handle` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `content`
+--
+
+INSERT INTO `content` (`id`, `elementId`, `title`, `dateCreated`, `dateUpdated`, `uid`, `field_text`, `field_number`, `field_handle`) VALUES
+(1, 29, '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0', '564352', '0', NULL),
+(2, 30, 'Ein Title', '0000-00-00 00:00:00', '0000-00-00 00:00:00', '0', 'Ein toller text', '5454', NULL);
 
 -- --------------------------------------------------------
 
@@ -111,7 +119,9 @@ CREATE TABLE `elements` (
 --
 
 INSERT INTO `elements` (`id`, `fieldLayoutId`, `type`, `enabled`, `archived`, `dateCreated`, `dateUpdated`, `uid`) VALUES
-(26, NULL, 'anu\\elements\\User', 1, 0, '2017-12-25 13:00:13', '2017-12-26 11:11:09', 'c577b0b5-1c66-4c3c-ab07-04d97e647bb6');
+(26, NULL, 'anu\\elements\\User', 1, 0, '2017-12-25 13:00:13', '2017-12-26 11:11:09', 'c577b0b5-1c66-4c3c-ab07-04d97e647bb6'),
+(29, 1, 'anu\\elements\\Entry', 1, 0, '2018-01-10 13:36:41', '2018-01-10 13:36:41', '59e1b509-26f8-4dd2-98e2-fb35ec213813'),
+(30, 1, 'anu\\elements\\Entry', 1, 0, '2018-01-10 13:48:11', '2018-01-11 16:27:18', '4a89973a-f9d0-4b43-9ee3-402f54812388');
 
 -- --------------------------------------------------------
 
@@ -130,6 +140,13 @@ CREATE TABLE `entries` (
   `dateUpdated` datetime NOT NULL,
   `uid` char(36) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Daten für Tabelle `entries`
+--
+
+INSERT INTO `entries` (`id`, `sectionId`, `typeId`, `authorId`, `postDate`, `expiryDate`, `dateCreated`, `dateUpdated`, `uid`) VALUES
+(30, 2, 1, 26, NULL, NULL, '2018-01-10 13:48:11', '2018-01-11 16:27:19', '937b1a80-079e-4f52-a778-b0a90d128348');
 
 -- --------------------------------------------------------
 
@@ -204,7 +221,7 @@ CREATE TABLE `fieldlayoutfields` (
 --
 
 INSERT INTO `fieldlayoutfields` (`id`, `layoutId`, `tabId`, `fieldId`, `required`, `sortOrder`, `dateCreated`, `dateUpdated`, `uid`) VALUES
-(8, 1, 7, 2, 0, 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', '7b497363-aeeb-466b-b830-85a5e5755838'),
+(8, 1, 7, 2, 1, 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', '7b497363-aeeb-466b-b830-85a5e5755838'),
 (9, 1, 8, 1, 0, 1, '2018-01-04 14:28:28', '2018-01-04 14:28:28', 'a8433c6b-c024-489f-b31a-dc4290871007');
 
 -- --------------------------------------------------------
@@ -276,8 +293,8 @@ CREATE TABLE `fields` (
 --
 
 INSERT INTO `fields` (`id`, `groupId`, `name`, `handle`, `instructions`, `type`, `settings`, `dateCreated`, `dateUpdated`, `uid`) VALUES
-(1, 1, 'Text Field', 'text', 'ededede', 'anu\\fields\\TextField', '[]', '2017-12-30 21:18:49', '2017-12-31 15:43:57', '3590f541-cd96-419d-9e26-9f4711ca85c4'),
-(2, 1, 'text', 'number', '', 'anu\\fields\\NumberField', '[]', '2017-12-30 21:26:48', '2018-01-04 13:08:30', '07fec350-dc27-4fa0-929e-85148a95ce2e'),
+(1, 1, 'Text Field', 'text', 'Gib bitte einen Text ein', 'anu\\fields\\TextField', '[]', '2017-12-30 21:18:49', '2018-01-10 14:17:16', '3590f541-cd96-419d-9e26-9f4711ca85c4'),
+(2, 1, 'Eine Zahl', 'number', '', 'anu\\fields\\NumberField', '[]', '2017-12-30 21:26:48', '2018-01-10 14:15:44', '07fec350-dc27-4fa0-929e-85148a95ce2e'),
 (3, 2, 'Field for Contact', 'handle', 'Please fill out something ^.^', 'anu\\models\\Field', '[]', '2017-12-31 16:20:18', '2017-12-31 16:20:18', 'ad1adbc0-756e-402e-864d-f8cff92c4382');
 
 -- --------------------------------------------------------
@@ -511,13 +528,13 @@ ALTER TABLE `categorygroups`
 -- AUTO_INCREMENT für Tabelle `content`
 --
 ALTER TABLE `content`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT für Tabelle `elements`
 --
 ALTER TABLE `elements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT für Tabelle `entrytypes`

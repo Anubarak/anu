@@ -9,7 +9,9 @@
 namespace anu\elements\db;
 
 use Anu;
+use anu\models\Section;
 use anu\records\EntryRecord;
+use anu\records\SectionRecord;
 use anu\records\UserRecord;
 
 class EntryQuery extends ElementQuery
@@ -49,6 +51,29 @@ class EntryQuery extends ElementQuery
     public function sectionId($value)
     {
         $this->sectionId = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param $section string|\anu\models\Section|null
+     *
+     * @return $this
+     * @throws \anu\base\InvalidConfigException
+     */
+    public function section($section)
+    {
+        if (\is_object($section)) {
+            $this->sectionId = $section->id;
+
+            return $this;
+        }
+
+        if (\is_string($section) && ($section = Anu::$app->getSections()->getSectionByHandle($section))) {
+            $this->sectionId = $section->id;
+
+            return $this;
+        }
 
         return $this;
     }

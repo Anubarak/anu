@@ -64,7 +64,7 @@ interface FieldInterface
      * @param ElementInterface|null $element
      * @return string
      */
-    public function getInputHtml($value, Model $element = null): string;
+    public function getInputHtml($value, ElementInterface $element = null): string;
 
     /**
      * Normalizes the field’s value for use.
@@ -77,7 +77,7 @@ interface FieldInterface
      *
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, Model $element = null);
+    public function normalizeValue($value, ElementInterface $element = null);
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.

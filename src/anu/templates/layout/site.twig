@@ -29,6 +29,7 @@
         {% block main %}
 
             {% set sideNav = block('sideNav') %}
+            {% set details = block('details') %}
             {% set pageContent = block('pageContent') %}
             {% if sideNav is not empty %}
                 <div class="col-lg-3 entry-type-container">
@@ -38,10 +39,17 @@
                     <div class="pane">{{ pageContent|raw }}</div>
                 </div>
             {% else %}
-                <div class="col-lg-12" style="">
+                {% set length = details? 9  : 12 %}
+                <div class="col-lg-{{ length }}" style="">
                     <div class="pane">{{ pageContent|raw }}</div>
                 </div>
                 {% block sideNav %}{% endblock %}
+                {% if details %}
+                    <div class="col-lg-3" style="">
+                        {% block details %}{% endblock %}
+                    </div>
+                {% endif %}
+
             {% endif %}
 
         {% endblock %}

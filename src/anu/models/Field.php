@@ -15,6 +15,9 @@ use anu\base\FieldTrait;
 use anu\base\Model;
 use anu\base\SavableComponent;
 use anu\db\Schema;
+use anu\elements\db\ElementQuery;
+use anu\elements\db\ElementQueryInterface;
+use anu\events\FieldElementEvent;
 use anu\records\FieldGroupRecord;
 use anu\records\FieldRecord;
 use anu\validators\UniqueValidator;
@@ -34,7 +37,7 @@ class Field extends SavableComponent implements FieldInterface{
     /**
      * @event FieldElementEvent The event that is triggered before the element is saved
      *
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
+     * set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     public const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
 
@@ -46,7 +49,7 @@ class Field extends SavableComponent implements FieldInterface{
     /**
      * @event FieldElementEvent The event that is triggered before the element is deleted
      *
-     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
+     * set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
     public const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
 
@@ -153,6 +156,27 @@ class Field extends SavableComponent implements FieldInterface{
     }
 
     /**
+     * @inheritdoc
+     * @throws \anu\base\InvalidConfigException
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        if ($value !== null) {
+            // If the field type doesn't have a content column, it *must* override this method
+            // if it wants to support a custom query criteria attribute
+            if (!static::hasContentColumn()) {
+                return false;
+            }
+
+            $handle = $this->handle;
+            /** @var \anu\elements\db\ElementQuery $query */
+            $query->subQuery->andWhere(['content.' . \Anu::$app->getContent()->fieldColumnPrefix . $handle => $value]);
+        }
+
+        return null;
+    }
+
+    /**
      * Normalizes the field’s value for use.
      *
      * This method is called by `entry.fieldHandle` to output the value
@@ -163,7 +187,8 @@ class Field extends SavableComponent implements FieldInterface{
      *
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, Model $element = null){
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
         return $value;
     }
 
@@ -180,7 +205,17 @@ class Field extends SavableComponent implements FieldInterface{
      * @return mixed The serialized field value
      */
     public function serializeValue($value, ElementInterface $element = null){
-        return json_encode($value);
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof \Serializable) {
+            return $value->serialize();
+        }
+
+        // If it's "arrayable", convert to array
+        if ($value instanceof Arrayab) {
+            return $value->toArray();
+        }
+
+        return $value;
     }
 
     /**
@@ -204,8 +239,21 @@ class Field extends SavableComponent implements FieldInterface{
      *
      * @return bool Whether the element should be saved
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew): bool{
-        // TODO: Implement beforeElementSave() method.
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
+    {
+        // Trigger a 'beforeElementSave' event
+        $event = new FieldElementEvent(
+            [
+                'element' => $element,
+                'isNew'   => $isNew,
+            ]
+        );
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+
+        return $event->isValid;
     }
 
     /**
@@ -217,7 +265,18 @@ class Field extends SavableComponent implements FieldInterface{
      * @return void
      */
     public function afterElementSave(ElementInterface $element, bool $isNew){
-        // TODO: Implement afterElementSave() method.
+        // Trigger an 'afterElementSave' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
+            $this->trigger(
+                self::EVENT_AFTER_ELEMENT_SAVE,
+                new FieldElementEvent(
+                    [
+                        'element' => $element,
+                        'isNew'   => $isNew,
+                    ]
+                )
+            );
+        }
     }
 
     /**
@@ -228,7 +287,15 @@ class Field extends SavableComponent implements FieldInterface{
      * @return bool Whether the element should be deleted
      */
     public function beforeElementDelete(ElementInterface $element): bool{
-        // TODO: Implement beforeElementDelete() method.
+        // Trigger a 'beforeElementDelete' event
+        $event = new FieldElementEvent(
+            [
+                'element' => $element,
+            ]
+        );
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+
+        return $event->isValid;
     }
 
     /**
@@ -238,8 +305,19 @@ class Field extends SavableComponent implements FieldInterface{
      *
      * @return void
      */
-    public function afterElementDelete(ElementInterface $element){
-        // TODO: Implement afterElementDelete() method.
+    public function afterElementDelete(ElementInterface $element): void
+    {
+        // Trigger an 'afterElementDelete' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
+            $this->trigger(
+                self::EVENT_AFTER_ELEMENT_DELETE,
+                new FieldElementEvent(
+                    [
+                        'element' => $element,
+                    ]
+                )
+            );
+        }
     }
 
     public function init(){

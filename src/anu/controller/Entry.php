@@ -10,8 +10,11 @@ namespace anu\controller;
 
 use Anu;
 use anu\base\Controller;
+use anu\base\Element;
 use anu\base\ElementNotFoundException;
 use anu\base\EntryTypeNotFoundException;
+use anu\helper\Url;
+use anu\models\Section;
 use anu\records\SectionRecord;
 
 class Entry extends Controller
@@ -27,10 +30,9 @@ class Entry extends Controller
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\InvalidRouteException
      */
-    public function actionRenderList()
+    public function actionRenderList(): string
     {
         $handle = Anu::$app->getRequest()->getParam('section');
-
         return Anu::$app->getTemplate()->render(
             'entries/index.twig',
             [
@@ -65,6 +67,67 @@ class Entry extends Controller
         );
     }
 
+    /**
+     * @throws \anu\base\InvalidParamException
+     * @throws \anu\base\ElementNotFoundException
+     * @throws \anu\db\Exception
+     * @throws \Throwable
+     * @throws \anu\base\InvalidConfigException
+     */
+    public function actionSaveEntry()
+    {
+        $entry = $this->_getEntry();
+        $this->_populateEntryModel($entry);
+        $currentUser = Anu::$app->getUser()->currentUser();
+
+        //TODO check for permission
+        if ($entry->enabled) {
+            $entry->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if (!Anu::$app->getElements()->saveElement($entry)) {
+            if ($this->isAjaxRequest()) {
+                return $this->asJson(
+                    [
+                        'errors'  => $entry->getErrors(),
+                        'success' => false
+                    ]
+                );
+            }
+            Anu::$app->getSession()->addError(Anu::t('anu', 'Couldn’t save entry.'));
+
+
+            // Send the entry back to the template
+            Anu::$app->getSession()->setRouteParams(
+                [
+                    'entry' => $entry
+                ]
+            );
+
+            return null;
+        }
+
+        if ($this->isAjaxRequest()) {
+            $return = [];
+
+            $return['success'] = true;
+            $return['id'] = $entry->id;
+            $return['title'] = $entry->title;
+
+            if (Anu::$app->getRequest()->isCpRequest()) {
+                $return['cpEditUrl'] = $entry->getCpEditUrl();
+                $return['redirect'] = Url::to('admin/entries/' . $entry->getSection()->handle);
+            }
+
+            $return['authorUsername'] = $entry->getAuthor()->username;
+            $return['dateCreated'] = $entry->dateCreated;
+            $return['dateUpdated'] = $entry->dateUpdated;
+            $return['postDate'] = ($entry->postDate ?: null);
+
+            return $this->asJson($return);
+        }
+    }
+
 
     // private functions
     //==========================================================
@@ -73,18 +136,19 @@ class Entry extends Controller
      * @throws \anu\base\InvalidConfigException
      * @throws \anu\base\ElementNotFoundException
      */
-    public function _getEntry(): \anu\elements\Entry
+    private function _getEntry(): \anu\elements\Entry
     {
         $request = Anu::$app->getRequest();
         $id = $request->getParam('id');
         if (is_numeric($id)) {
-            if (!$entry = \anu\elements\Entry::find()->id(1)->enabled(0)->one()) {
+            if (!$entry = \anu\elements\Entry::find()->id($id)->enabled(0)->one()) {
                 throw new ElementNotFoundException('could not find Element with id ' . $id);
             }
         } else {
             $entry = new \anu\elements\Entry();
+            $sectionIdentifier = $request->getParam('section', (int) $request->getParam('sectionId'));
             /** @var \anu\models\Section $section */
-            $section = $this->getSection($request->getParam('section'));
+            $section = $this->getSection($sectionIdentifier);
             $entry->sectionId = $section->id;
         }
 
@@ -92,18 +156,21 @@ class Entry extends Controller
     }
 
     /**
-     * @param $handle
+     * @param $id
      *
      * @return \anu\models\Section|null
      * @throws \anu\base\InvalidConfigException
      */
-    private function getSection($handle)
+    private function getSection($id): ?Section
     {
         if ($this->_section !== null) {
             return $this->_section;
         }
+        if (is_numeric($id)) {
+            return $this->_section = Anu::$app->getSections()->getSectionById($id);
+        }
 
-        return $this->_section = Anu::$app->getSections()->getSectionByHandle($handle);
+        return $this->_section = Anu::$app->getSections()->getSectionByHandle($id);
     }
 
     /**
@@ -133,8 +200,7 @@ class Entry extends Controller
         }
 
         $entry->fieldLayoutId = $entry->getType()->fieldLayoutId;
-        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
+        $entry->setFieldValuesFromRequest();
 
         // Author
         $currentUser = Anu::$app->getUser()->currentUser();

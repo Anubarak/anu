@@ -11,25 +11,55 @@
 
 {% block sideNav %}
     <div>
-        {#{% set groups = anu.fields.getAllGroups %}
+        {% set sections = anu.getSections().getAllSections() %}
+        {{ includeJsObject(sections, 'sections') }}
         <div class="list-group list-group-entry-type">
-            <button ng-repeat="group in groups" ng-click="changeGroup(group.id);" type="button" class="list-group-item">{[{ group.name }]}</button>
+            <button ng-repeat="section in sections" ng-click="changeGroup(section.id);" type="button" class="list-group-item">{[{ section.name }]}</button>
         </div>
-        <a ng-click="newGroup();" href="" class="waves-effect waves-light black-text btn blue-grey lighten-5">{{ "New Group"|t }}</a>
-        #}
     </div>
 {% endblock %}
 
 
 {% block pageContent %}
     <div class="card">
+        {% set entries = [] %}
+        {% set sections = anu.getSections().getAllSections() %}
+        {% if sections %}
+            {% set section = sections|first %}
+            {% set entries = anu.getElements().entries().section(section.handle).all() %}
+            {{ entries[0].type }}
+        {% endif %}
+        {{ includeJsObject(entries, 'entries') }}
 
         <div class="header">
             <h2>
                 {{ "Entries"|t }}
             </h2>
         </div>
+
         <div class="body table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Section</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="entry in entries">
+                    <th scope="row">
+                        <a href="{[{ ('admin/entries/' + entry.section.handle + '/' + entry.id)|url }]}">
+                            {[{ entry.id }]}
+                        </a>
+                    </th>
+                    <td>{[{ entry.title }]}</td>
+                    <td>{[{ entry.type.name }]}</td>
+                    <td>{[{ entry.section.name }]}</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 

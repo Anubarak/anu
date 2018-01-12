@@ -8,6 +8,7 @@
 namespace anu\base;
 
 use Anu;
+use anu\behaviors\ContentBehavior;
 use anu\db\Query;
 use anu\elements\db\ElementQuery;
 use anu\elements\db\ElementQueryInterface;
@@ -202,7 +203,7 @@ abstract class Element extends Model implements ElementInterface
     public function behaviors()
     {
         return [
-            //'customFields' => ContentBehavior::class,
+            'customFields' => ContentBehavior::class,
         ];
     }
 
@@ -270,8 +271,8 @@ abstract class Element extends Model implements ElementInterface
         ];
 
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
-            $rules[] = [['title'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+            $rules[] = [['title'], 'string', 'max' => 255];
+            $rules[] = [['title'], 'required'];
         }
         //$rules[] = ['handle', UniqueValidator::class, 'targetClass' => \anu\records\ElementRecord::class];
         //$rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
@@ -389,6 +390,7 @@ abstract class Element extends Model implements ElementInterface
     public function setFieldValue(string $fieldHandle, $value)
     {
         $behavior = $this->getBehavior('customFields');
+
         $behavior->$fieldHandle = $value;
 
         // Don't assume that $value has been normalized
@@ -402,6 +404,14 @@ abstract class Element extends Model implements ElementInterface
     public function getContentTable(): string
     {
         return Anu::$app->getContent()->contentTable;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCpEditUrl(): string
+    {
+        return '';
     }
 
     /**
@@ -551,7 +561,7 @@ abstract class Element extends Model implements ElementInterface
      * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
-    protected function normalizeFieldValue(string $fieldHandle)
+    protected function normalizeFieldValue(string $fieldHandle): void
     {
         $field = $this->fieldByHandle($fieldHandle);
 
@@ -624,13 +634,11 @@ abstract class Element extends Model implements ElementInterface
      */
     protected function fieldByHandle(string $handle)
     {
-        return null;
-
         if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
         }
 
-        $contentService = Craft::$app->getContent();
+        $contentService = Anu::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = $this->getFieldContext();
         $fieldLayout = $this->getFieldLayout();
